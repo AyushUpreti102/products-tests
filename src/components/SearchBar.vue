@@ -4,7 +4,7 @@
       v-model="searchQuery"
       placeholder="Search for products..."
       class="search-bar"
-      @input="handleOnChange"
+      @input="debounceSearch"
     />
     <ul v-if="searchedProducts.length && searchQuery" class="search-dropdown">
       <li
@@ -19,21 +19,16 @@
 </template>
 
 <script setup lang="ts">
+import { useDebounce } from '@/composables/useDebounce';
 import BaseButton from './BaseButton.vue';
 import { useProductStore } from '@/stores/product-store';
 import type { Product } from '@/types/types';
 import { storeToRefs } from 'pinia';
 
-const emits = defineEmits<{
-  (e: 'on-change', value: string): void;
-}>()
-
 const productStore = useProductStore();
 const { searchQuery, searchedProducts } = storeToRefs(productStore);
 
-const handleOnChange = (event: Event) => {
-  emits('on-change', (event.target as HTMLInputElement).value)
-}
+const debounceSearch = useDebounce(productStore.searchProducts, 1000)
 
 const selectProduct = (product: Product) => {
   productStore.addProduct(product);
